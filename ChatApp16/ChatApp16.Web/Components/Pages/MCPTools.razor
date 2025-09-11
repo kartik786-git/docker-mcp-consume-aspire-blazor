@@ -1,0 +1,172 @@
+﻿@page "/mcptools"
+
+@using Microsoft.AspNetCore.OutputCaching
+@using ChatApp16.Web
+
+@inject MCPServercs MCPServer
+@attribute [StreamRendering(true)]
+@rendermode InteractiveServer
+@attribute [OutputCache(Duration = 30)]
+<h3>MCPTools</h3>
+
+
+<h3 class="page-title">MCP Tools</h3>
+
+<div class="tools-panel">
+    <div class="tools-header d-flex align-items-center justify-content-between mb-4">
+        <input class="form-control tool-search" @bind="FilterText" placeholder="Search tools by name or description..." />
+        <div class="tools-count text-muted">@(ToolDetailsFiltered.Count()) items</div>
+    </div>
+
+    @if (ToolDetails.Count == 0)
+    {
+        <div class="loading-grid">
+            @for (int i = 0; i < 6; i++)
+            {
+                <div class="loading-card shimmer"></div>
+            }
+        </div>
+    }
+    else if (!ToolDetailsFiltered.Any())
+    {
+        <div class="empty-state text-center">
+            <i class="bi bi-exclamation-circle" style="font-size:2rem"></i>
+            <p class="mt-2">No tools match your search.</p>
+        </div>
+    }
+    else
+    {
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4">
+            @foreach (var tool in ToolDetailsFiltered)
+            {
+                <div class="col">
+                    <div class="card tool-card h-100">
+                        <div class="card-body d-flex flex-column">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="tool-icon me-3">
+                                    <i class="bi bi-lightning-fill"></i>
+                                </div>
+                                <h5 class="card-title mb-0 flex-grow-1">@tool.Name</h5>
+                            </div>
+                            <p class="card-text tool-desc">@tool.Description</p>
+                            <div class="mt-auto d-flex justify-content-between align-items-center pt-2">
+                                <small class="text-muted">Model Context Protocol</small>
+                                <a class="btn btn-sm btn-primary px-3" href="#" @onclick:preventDefault="true">Use</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+<style>
+    .page-title {
+        font-weight: 700;
+        letter-spacing: -0.5px;
+        margin-bottom: 1.5rem;
+        font-size: 2.2rem;
+    }
+    .tools-panel {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding-bottom: 2rem;
+    }
+    .tool-search {
+        max-width: 400px;
+        margin-right: 1rem;
+        font-size: 1.1rem;
+        border-radius: 8px;
+        border: 1px solid #e0e3ea;
+    }
+    .tools-count {
+        font-size: 1rem;
+        margin-left: 1rem;
+    }
+    .tool-card {
+        border: none;
+        border-radius: 16px;
+        background: linear-gradient(135deg, #fafdff 80%, #eaf3ff 100%);
+        box-shadow: 0 4px 24px rgba(18, 38, 63, 0.08);
+        transition: transform .18s, box-shadow .18s;
+        padding: 0.5rem 0.5rem 0.5rem 0.5rem;
+    }
+    .tool-card:hover {
+        transform: translateY(-4px) scale(1.02);
+        box-shadow: 0 12px 32px rgba(18, 38, 63, 0.13);
+    }
+    .tool-icon {
+        width: 38px;
+        height: 38px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg,#6dd3ff,#a6c1ff);
+        color: white;
+        font-size: 1.3rem;
+        box-shadow: 0 2px 8px rgba(106, 193, 255, 0.18);
+    }
+    .card-title {
+        font-size: 1.15rem;
+        font-weight: 600;
+        color: #1a2332;
+    }
+    .tool-desc {
+        color: #3a465a;
+        font-size: 1.02rem;
+        margin-bottom: 0.5rem;
+        margin-top: 0.2rem;
+        min-height: 48px;
+    }
+    .loading-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 1.2rem;
+    }
+    .loading-card {
+        height: 140px;
+        border-radius: 16px;
+        background: linear-gradient(90deg,#f3f4f6,#eef2ff,#f3f4f6);
+    }
+    .shimmer {
+        background-size: 200% 100%;
+        animation: shimmer 1.4s linear infinite;
+    }
+    @@keyframes shimmer {
+        0% { background-position: 200% 0 }
+        100% { background-position: -200% 0 }
+    }
+    .empty-state {
+        padding: 2rem 0;
+        color: #6c757d;
+    }
+</style>
+
+@code {
+    private List<ToolItem> ToolDetails { get; set; } = new();
+
+        private string FilterText { get; set; } = string.Empty;
+
+    private IEnumerable<ToolItem> ToolDetailsFiltered => string.IsNullOrWhiteSpace(FilterText)
+        ? ToolDetails
+        : ToolDetails.Where(t => (t.Name + " " + t.Description).Contains(FilterText, StringComparison.OrdinalIgnoreCase));
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        var tools = await MCPServer.GetToolsAsync();
+        ToolDetails = tools.Select(t => 
+            new ToolItem { Name = t.Name, Description = t.Description ?? string.Empty }).ToList();
+    }
+
+
+
+    private class ToolItem
+    {
+        public string Name { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+    }
+
+}

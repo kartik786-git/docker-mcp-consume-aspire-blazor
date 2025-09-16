@@ -1,7 +1,21 @@
 var builder = DistributedApplication.CreateBuilder(args);
 
-var ollama = builder.AddOllama("ollama").WithLifetime(ContainerLifetime.Persistent)
-    .WithDataVolume();
+#region cpu
+//var ollama = builder.AddOllama("ollama").WithLifetime(ContainerLifetime.Persistent)
+//    .WithDataVolume();
+//var chat = ollama.AddModel("chat", "llama3.2");
+//var embeddings = ollama.AddModel("embeddings", "all-minilm");
+#endregion
+
+#region GPu
+var ollama = builder.AddOllama("ollama")
+    .WithImageTag("latest")
+    .WithContainerRuntimeArgs("--gpus=all")
+    .WithLifetime(ContainerLifetime.Persistent)
+    .WithDataVolume("ollama");
+#endregion
+
+
 var chat = ollama.AddModel("chat", "llama3.2");
 var embeddings = ollama.AddModel("embeddings", "all-minilm");
 

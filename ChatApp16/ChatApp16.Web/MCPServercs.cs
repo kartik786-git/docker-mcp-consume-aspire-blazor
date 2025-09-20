@@ -43,6 +43,27 @@ namespace ChatApp16.Web
                          Name = "github",
 
                      }));
+        // this is for direct dotnet project
+        //private readonly Task<IMcpClient> dotnetMcpToolsClient = McpClientFactory.CreateAsync(
+        //            new StdioClientTransport(new()
+        //            {
+
+        //                Command = "dotnet",
+        //                Arguments = ["run", "--project", "D:\\Project\\ChatApp16\\MyOwnCustomMcpServer\\MyOwnCustomMcpServer.csproj"],
+        //                Name = "dotnet own mcp tool.",
+
+        //            }));
+
+
+        private readonly Task<IMcpClient> dotnetcontianreMcpClient = McpClientFactory.CreateAsync(
+                      new StdioClientTransport(new()
+                      {
+
+                          Command = "docker",
+                          Arguments = ["run", "-i", "--rm", "myowncustommcpserver:dev"],
+                          Name = "dotnet own mcp tool from contianer",
+
+                      }));
 
         public async Task<IEnumerable<AIFunction>> GetToolsAsync()
         {
@@ -51,7 +72,8 @@ namespace ChatApp16.Web
             //// return tools.Where(tool => _toolsToUse.Contains(tool.Name));
             //return tools;
 
-            var clients = await Task.WhenAll(youtubeMcpClient, duckduckgoMcpClient, githubMcpClient);
+            //var clients = await Task.WhenAll(youtubeMcpClient, duckduckgoMcpClient, githubMcpClient);
+            var clients = await Task.WhenAll(dotnetcontianreMcpClient);
 
             var getToolsTasks = clients.Select(client => client.ListToolsAsync().AsTask());
 

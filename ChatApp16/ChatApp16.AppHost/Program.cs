@@ -19,11 +19,16 @@ var ollama = builder.AddOllama("ollama")
 var chat = ollama.AddModel("chat", "llama3.2");
 var embeddings = ollama.AddModel("embeddings", "all-minilm");
 
+var mcpserver = builder.AddProject<Projects.MyOwnCustomMcpServer>("myowncustommcpserver");
+
 var webApp = builder.AddProject<Projects.ChatApp16_Web>("aichatweb-app");
 webApp
     .WithReference(chat)
     .WithReference(embeddings)
     .WaitFor(chat)
     .WaitFor(embeddings);
+    webApp.WithReference(mcpserver).WaitFor(mcpserver);
+
+
 
 builder.Build().Run();

@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "MyOwnCustomMcpServer": {
+      "commandName": "Project"
+    },
+    "Container (.NET SDK)": {
+      "commandName": "SdkContainer"
+    }
+  }
+}
